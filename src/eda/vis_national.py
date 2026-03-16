@@ -31,10 +31,8 @@ EVENT_LINES = [
     ("2022-08-09", "CHIPS Act\nsigned", "#2CA02C"),
 ]
 
-SECTORS = ["ind", "com", "res"]
+SECTORS = ["ind"]
 PANEL_TITLES = {
-    "res": "Residential",
-    "com": "Commercial",
     "ind": "Industrial",
 }
 
@@ -73,9 +71,9 @@ def plot_national_trends(df: pd.DataFrame) -> None:
     national = national.sort_index()
 
     with zeus_style():
-        fig, axes = plt.subplots(3, 1, figsize=(14, 9.5), sharex=True)
+        fig, ax = plt.subplots(1, 1, figsize=(14, 4.5))
 
-        for ax, sector in zip(axes, SECTORS):
+        for sector in SECTORS:
             col = f"sales_{sector}"
             raw = national[col]
             smooth = raw.rolling(ROLLING_WINDOW, min_periods=1).mean()

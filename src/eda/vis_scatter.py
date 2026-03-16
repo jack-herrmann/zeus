@@ -8,6 +8,7 @@ import pandas as pd
 from scipy.signal import detrend
 
 from .style import (
+    pick_key_states,
     save_figure,
     zeus_style,
     zscore_series,
@@ -15,22 +16,15 @@ from .style import (
 
 logger = logging.getLogger("zeus.eda.vis_scatter")
 
-STATES_POS = [("TX", "Texas", 0.83), ("NM", "New Mexico", 0.74)]
-STATES_NEG = [("UT", "Utah", -0.62), ("MA", "Massachusetts", -0.54)]
-
-COLOR_POS = "#1A7A2E"
-COLOR_NEG = "#C0392B"
-
 
 def plot_scatter(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
-    """V7: 2×2 scatter, z-scored detrended signal_ind vs z-scored detrended CI."""
-    all_states = STATES_POS + STATES_NEG
+    """V7: 1×3 scatter, z-scored detrended signal_ind vs z-scored detrended CI."""
+    key_states = pick_key_states(corr_df)
 
     with zeus_style():
-        fig, axes = plt.subplots(2, 2, figsize=(10, 9))
-        axes = axes.flatten()
+        fig, axes = plt.subplots(1, 3, figsize=(14, 5))
 
-        for ax, (abbr, name, r_val) in zip(axes, all_states):
+        for ax, (abbr, name, r_val, line_color) in zip(axes, key_states):
             sub = df[df["state"] == abbr].sort_values("period")
             sig = sub["signal_ind"].values
             ci = sub["coincident_index"].values
@@ -40,9 +34,6 @@ def plot_scatter(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
 
             sig_z = zscore_series(pd.Series(sig_dt)).values
             ci_z = zscore_series(pd.Series(ci_dt)).values
-
-            is_positive = r_val > 0
-            line_color = COLOR_POS if is_positive else COLOR_NEG
 
             ax.scatter(sig_z, ci_z, alpha=0.25, s=12, color="#555555",
                        edgecolors="none")
@@ -60,10 +51,8 @@ def plot_scatter(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
             ax.axhline(0, color="gray", linewidth=0.3, linestyle="--")
             ax.axvline(0, color="gray", linewidth=0.3, linestyle="--")
 
-        # Unify axis limits across all panels
-        all_axes = fig.axes
         lim = 5
-        for a in all_axes:
+        for a in axes:
             a.set_xlim(-lim, lim)
             a.set_ylim(-lim, lim)
             a.set_aspect("equal", adjustable="box")

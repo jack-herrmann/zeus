@@ -12,6 +12,7 @@ from src.config import DATA_PROCESSED, PROJECT_ROOT
 from .style import (
     DIVERGING_CMAP,
     SEQUENTIAL_CMAP,
+    pick_key_states,
     save_figure,
     zeus_style,
 )
@@ -202,9 +203,6 @@ def plot_growth_comparison(df: pd.DataFrame) -> None:
 # ---------------------------------------------------------------------------
 # V5: Deindustrialization map (climax)
 # ---------------------------------------------------------------------------
-_V5_LABEL_STATES = ["TX", "NM", "UT", "MA"]
-
-
 def plot_deindustrialization_map(corr_df: pd.DataFrame) -> None:
     """V5 — Choropleth of detrended industrial correlation."""
     ind_corr = corr_df[corr_df["sector"] == "ind"][["state", "r_detrended"]].copy()
@@ -212,6 +210,8 @@ def plot_deindustrialization_map(corr_df: pd.DataFrame) -> None:
 
     gdf = load_states_gdf()
     gdf = gdf.merge(ind_corr, on="STUSPS", how="left")
+
+    key_states = pick_key_states(corr_df)
 
     with zeus_style():
         fig, ax = plt.subplots(1, 1, figsize=(13, 8))
@@ -223,14 +223,14 @@ def plot_deindustrialization_map(corr_df: pd.DataFrame) -> None:
             vmin=-1.0, vmax=1.0,
         )
 
-        for abbr in _V5_LABEL_STATES:
+        for abbr, _name, _r_val, color in key_states:
             row = gdf[gdf["STUSPS"] == abbr].iloc[0]
             c = row.geometry.centroid
             val = row["r_detrended"]
             ax.annotate(
                 f"{abbr}  {val:+.2f}",
                 xy=(c.x, c.y), fontsize=9, fontweight="bold",
-                ha="center", va="center",
+                ha="center", va="center", color=color,
                 bbox=dict(boxstyle="round,pad=0.2", fc="white", alpha=0.8, lw=0),
             )
 

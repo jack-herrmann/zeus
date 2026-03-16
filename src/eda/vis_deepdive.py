@@ -7,6 +7,7 @@ import pandas as pd
 
 from .style import (
     parse_periods,
+    pick_key_states,
     save_figure,
     zeus_style,
     zscore_series,
@@ -15,28 +16,19 @@ from .style import (
 logger = logging.getLogger("zeus.eda.vis_deepdive")
 
 ROLLING_WINDOW = 12
-
-STATES_POS = [("TX", "Texas", 0.83), ("NM", "New Mexico", 0.74)]
-STATES_NEG = [("UT", "Utah", -0.62), ("MA", "Massachusetts", -0.54)]
-
-COLOR_POS = "#1A7A2E"
-COLOR_NEG = "#C0392B"
-COLOR_CI = "#7EBF8E"
+COLOR_CI = "#5B7B9A"
 
 
 def plot_deepdive(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
-    """V6: 4 states, cleaned industrial signal + CI, rolling average."""
-    all_states = STATES_POS + STATES_NEG
+    """V6: 3 key states, cleaned industrial signal + CI, rolling average."""
+    key_states = pick_key_states(corr_df)
 
     with zeus_style():
-        fig, axes = plt.subplots(4, 1, figsize=(14, 10), sharex=True)
+        fig, axes = plt.subplots(3, 1, figsize=(14, 8), sharex=True)
 
-        for ax, (abbr, name, r_val) in zip(axes, all_states):
+        for ax, (abbr, name, r_val, line_color) in zip(axes, key_states):
             sub = df[df["state"] == abbr].sort_values("period")
             dates = parse_periods(sub["period"])
-
-            is_positive = r_val > 0
-            line_color = COLOR_POS if is_positive else COLOR_NEG
 
             sig = sub["signal_ind"].copy()
             ci_z = zscore_series(sub["coincident_index"])

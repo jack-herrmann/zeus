@@ -45,7 +45,7 @@ def run_eda() -> None:
     # ------------------------------------------------------------------
     # Act 4: The Practical Limits
     # ------------------------------------------------------------------
-    plot_lag_analysis(df)                  # V8
+    plot_lag_analysis(df, corr_df)          # V8
 
     logger.info("All Phase 3 visuals complete.")
 

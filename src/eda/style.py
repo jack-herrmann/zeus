@@ -23,6 +23,43 @@ SEQUENTIAL_CMAP = "YlGn"
 SECTOR_LABELS = {"res": "Residential", "com": "Commercial", "ind": "Industrial"}
 SECTOR_KEYS = ["res", "com", "ind"]
 
+# Colors for the three key states (max / near-0 / min correlation)
+COLOR_KEY_MAX = "#1A7A2E"    # green
+COLOR_KEY_MIN = "#C0392B"    # red
+COLOR_KEY_NEAR0 = "#DAA520"  # yellow (goldenrod)
+
+STATE_NAMES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
+    "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
+    "DC": "District of Columbia", "FL": "Florida", "GA": "Georgia", "HI": "Hawaii",
+    "ID": "Idaho", "IL": "Illinois", "IN": "Indiana", "IA": "Iowa",
+    "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine",
+    "MD": "Maryland", "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota",
+    "MS": "Mississippi", "MO": "Missouri", "MT": "Montana", "NE": "Nebraska",
+    "NV": "Nevada", "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico",
+    "NY": "New York", "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio",
+    "OK": "Oklahoma", "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island",
+    "SC": "South Carolina", "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas",
+    "UT": "Utah", "VT": "Vermont", "VA": "Virginia", "WA": "Washington",
+    "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+}
+
+
+def pick_key_states(corr_df):
+    """Return [(abbr, name, r_val, color), ...] for max, near-0, min industrial correlation."""
+    ind = corr_df[corr_df["sector"] == "ind"].copy()
+    max_idx = ind["r_detrended"].idxmax()
+    min_idx = ind["r_detrended"].idxmin()
+    ind["_abs_r"] = ind["r_detrended"].abs()
+    near0_idx = ind["_abs_r"].idxmin()
+
+    result = []
+    for idx, color in [(max_idx, COLOR_KEY_MAX), (near0_idx, COLOR_KEY_NEAR0), (min_idx, COLOR_KEY_MIN)]:
+        row = ind.loc[idx]
+        abbr = row["state"]
+        result.append((abbr, STATE_NAMES.get(abbr, abbr), row["r_detrended"], color))
+    return result
+
 # ---------------------------------------------------------------------------
 # NBER recession date ranges
 # ---------------------------------------------------------------------------
