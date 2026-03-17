@@ -55,6 +55,7 @@ def plot_deepdive(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
             ax.set_ylabel("Relative level", fontsize=9)
             ax.axhline(0, color="gray", linewidth=0.3)
 
+        axes[-1].set_xlim(dates.min(), dates.max())
         axes[0].legend(loc="upper left", fontsize=8)
 
         fig.suptitle(

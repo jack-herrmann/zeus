@@ -55,7 +55,8 @@ def _add_events(ax, ymin: float, ymax: float) -> None:
 
     for date_str, label, color in EVENT_LINES:
         dt = pd.Timestamp(date_str)
-        ax.axvline(dt, color=color, linewidth=0.7, linestyle="--", alpha=0.6, zorder=1)
+        ax.vlines(dt, ymin, 90, color=color, linewidth=0.7, linestyle="--",
+                  alpha=0.6, zorder=1)
         ax.text(
             dt, ymax - (ymax - ymin) * 0.02, label,
             fontsize=6.5, color=color, ha="center", va="top",
@@ -92,6 +93,7 @@ def plot_national_trends(df: pd.DataFrame) -> None:
             ax.set_title(PANEL_TITLES[sector], fontsize=12, fontweight="bold", loc="left")
 
             _add_events(ax, ymin, ymax)
+            ax.set_xlim(national.index.min(), national.index.max())
 
         fig.suptitle(
             "U.S. Monthly Electricity by Sector (12-Month Rolling Average)",

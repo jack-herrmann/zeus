@@ -60,11 +60,13 @@ def plot_lag_analysis(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
                 ax.plot(lag_list, rs, linewidth=0.8,
                         color="#2F4F6F", alpha=0.15)
 
-        # Overlay key states on top
-        for state, rs in key_curves.items():
-            name, color = key_states[state]
-            ax.plot(lag_list, rs, linewidth=2.0,
-                    color=color, alpha=0.9, label=name)
+        # Overlay key states on top (in pick_key_states order: green, yellow, red)
+        key_order = [abbr for abbr, _name, _r, _color in pick_key_states(corr_df)]
+        for state in key_order:
+            if state in key_curves:
+                name, color = key_states[state]
+                ax.plot(lag_list, key_curves[state], linewidth=2.0,
+                        color=color, alpha=0.9, label=name)
 
         # 95% significance band under the null of no correlation
         if sample_n:
