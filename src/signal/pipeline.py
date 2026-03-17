@@ -1,5 +1,3 @@
-"""Phase 2 orchestrator: weather adjust, seasonal adjust, standardize."""
-
 import logging
 
 from src.config import DATA_PROCESSED
@@ -20,26 +18,16 @@ EXPECTED_COLS = [
 
 
 def extract_signal(df):
-    """Run the full Phase 2 signal extraction pipeline.
-
-    1. OLS weather/price regression → residuals
-    2. STL seasonal decomposition → deseasonalized
-    3. Z-score standardization → signals
-    4. Drop intermediate columns, save panel_signal.parquet
-    """
     df = weather_adjust(df)
     df = seasonal_adjust(df)
     df = standardize(df)
 
-    # Drop intermediate deseason columns
     df = df.drop(columns=["deseason_res", "deseason_com", "deseason_ind"])
 
-    # Verify output
     assert len(df.columns) == 17, f"Expected 17 columns, got {len(df.columns)}"
     for col in EXPECTED_COLS:
         assert col in df.columns, f"Missing column: {col}"
 
-    # Save
     out_path = DATA_PROCESSED / "panel_signal.parquet"
     df.to_parquet(out_path, index=False)
     logger.info("Saved signal panel to %s", out_path)

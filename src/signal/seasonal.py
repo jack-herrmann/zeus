@@ -1,5 +1,3 @@
-"""Step 2: STL seasonal decomposition. Step 3: z-score standardization."""
-
 import logging
 
 import pandas as pd
@@ -14,11 +12,6 @@ SECTOR_KEYS = ["res", "com", "ind"]
 
 
 def seasonal_adjust(df: pd.DataFrame) -> pd.DataFrame:
-    """Apply STL decomposition to weather-adjusted residuals.
-
-    Extracts trend + remainder (strips seasonal component).
-    Returns df with deseason_res, deseason_com, deseason_ind added.
-    """
     df = df.copy()
     for sector in SECTOR_KEYS:
         df[f"deseason_{sector}"] = float("nan")
@@ -33,7 +26,7 @@ def seasonal_adjust(df: pd.DataFrame) -> pd.DataFrame:
             if values.isna().all():
                 continue
 
-            # Build frequency-stamped DatetimeIndex for STL
+            # STL needs freq-stamped index
             idx = pd.DatetimeIndex(group["period"].values).to_period("M").to_timestamp()
             ts = pd.Series(values.values, index=idx).asfreq("MS")
 
@@ -48,10 +41,6 @@ def seasonal_adjust(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def standardize(df: pd.DataFrame) -> pd.DataFrame:
-    """Z-score deseasonalized signals within each state/sector.
-
-    Returns df with signal_res, signal_com, signal_ind added.
-    """
     df = df.copy()
     for sector in SECTOR_KEYS:
         df[f"signal_{sector}"] = float("nan")

@@ -1,5 +1,3 @@
-"""V6 — Deep-dive: cleaned industrial signal vs economic index."""
-
 import logging
 
 import matplotlib.pyplot as plt
@@ -20,7 +18,6 @@ COLOR_CI = "#5B7B9A"
 
 
 def plot_deepdive(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
-    """V6: 3 key states, cleaned industrial signal + CI, rolling average."""
     key_states = pick_key_states(corr_df)
 
     with zeus_style():
@@ -39,10 +36,10 @@ def plot_deepdive(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
             sig_smooth = sig.rolling(ROLLING_WINDOW, min_periods=1).mean()
             ci_smooth = ci_z.rolling(ROLLING_WINDOW, min_periods=1).mean()
 
-            # Raw monthly as faint background
+            # raw monthly as faint background
             ax.plot(dates, sig.values, color=line_color, alpha=0.15, linewidth=0.5)
 
-            # Smooth lines
+            # smooth lines
             ax.plot(dates, sig_smooth.values, color=line_color, linewidth=2.2,
                     label="Industrial signal (cleaned)")
             ax.plot(dates, ci_smooth.values, color=COLOR_CI, linewidth=1.8,

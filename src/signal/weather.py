@@ -1,5 +1,3 @@
-"""Step 1: OLS weather/price regression to remove weather and price effects."""
-
 import logging
 
 import pandas as pd
@@ -16,11 +14,6 @@ WEATHER_SKIP_STATES = {"AK", "HI"}
 
 
 def weather_adjust(df: pd.DataFrame) -> pd.DataFrame:
-    """Regress electricity sales on HDD, CDD, price, HDD², CDD² per state/sector.
-
-    Returns df with resid_res, resid_com, resid_ind columns added.
-    AK/HI are skipped (no weather data) and left as NaN.
-    """
     df = df.copy()
     for sector in SECTORS:
         df[f"resid_{sector}"] = float("nan")
@@ -44,7 +37,6 @@ def weather_adjust(df: pd.DataFrame) -> pd.DataFrame:
             df.loc[group.index, f"resid_{sector}"] = model.resid
             r2_by_sector[sector].append(model.rsquared)
 
-    # Log R² summary per sector
     for sector, r2_list in r2_by_sector.items():
         s = pd.Series(r2_list)
         logger.info(

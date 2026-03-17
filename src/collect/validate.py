@@ -1,5 +1,3 @@
-"""Post-collection integrity checks for the merged panel."""
-
 import logging
 
 import pandas as pd
@@ -8,7 +6,6 @@ logger = logging.getLogger(__name__)
 
 
 def validate_panel(df: pd.DataFrame) -> list[str]:
-    """Run integrity checks on the merged panel. Returns list of warnings/errors."""
     issues = []
 
     # 1. 50 unique states

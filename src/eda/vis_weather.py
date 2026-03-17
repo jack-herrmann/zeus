@@ -1,5 +1,3 @@
-"""V4 — Signal extraction pipeline (FL residential, 3-panel)."""
-
 import logging
 
 import matplotlib.pyplot as plt
@@ -9,14 +7,13 @@ from .style import parse_periods, save_figure, zeus_style
 
 logger = logging.getLogger("zeus.eda.vis_weather")
 
-# Single-hue gradient: light → medium → dark
+# light -> medium -> dark
 _COLOR_RAW = "#A8C4E0"
 _COLOR_DEWEATHERED = "#4A86C8"
 _COLOR_SIGNAL = "#1B4F8A"
 
 
 def plot_signal_pipeline(df: pd.DataFrame) -> None:
-    """V4: raw → weather-adjusted → final signal for FL residential."""
     fl = df[df["state"] == "FL"].sort_values("period")
     dates = parse_periods(fl["period"])
 
@@ -25,7 +22,7 @@ def plot_signal_pipeline(df: pd.DataFrame) -> None:
     with zeus_style():
         fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 9), sharex=True)
 
-        # Panel 1: raw
+        # panel 1: raw
         ax1.plot(dates, fl["sales_res"], color=_COLOR_RAW, linewidth=0.9)
         ax1.set_ylabel("MWh")
         ax1.set_title(
@@ -33,7 +30,7 @@ def plot_signal_pipeline(df: pd.DataFrame) -> None:
             fontsize=11, fontweight="bold", loc="left",
         )
 
-        # Panel 2: weather-adjusted
+        # panel 2: weather-adjusted
         ax2.plot(dates, fl["resid_res"], color=_COLOR_DEWEATHERED, linewidth=0.9)
         ax2.set_ylabel("MWh (residual)")
         ax2.set_title(
@@ -51,7 +48,7 @@ def plot_signal_pipeline(df: pd.DataFrame) -> None:
             ),
         )
 
-        # Panel 3: final signal
+        # panel 3: final signal
         ax3.plot(dates, fl["signal_res"], color=_COLOR_SIGNAL, linewidth=0.9)
         ax3.set_ylabel("Relative level")
         ax3.set_title(

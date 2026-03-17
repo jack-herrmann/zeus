@@ -1,5 +1,3 @@
-"""FRED Philadelphia Fed State Coincident Index collector."""
-
 import json
 import logging
 import time
@@ -34,7 +32,6 @@ def _make_session() -> requests.Session:
 
 
 def fetch_series(series_id: str, session: requests.Session) -> list[dict]:
-    """Fetch observations for a single FRED series."""
     params = {
         "series_id": series_id,
         "api_key": FRED_API_KEY,
@@ -48,7 +45,6 @@ def fetch_series(series_id: str, session: requests.Session) -> list[dict]:
 
 
 def fetch_all(use_cache: bool = True) -> pd.DataFrame:
-    """Fetch coincident index for all 50 states from FRED."""
     if use_cache and FRED_RAW_FILE.exists():
         logger.info("Loading cached FRED data from %s", FRED_RAW_FILE)
         with open(FRED_RAW_FILE) as f:
@@ -69,20 +65,15 @@ def fetch_all(use_cache: bool = True) -> pd.DataFrame:
             json.dump(all_records, f)
         logger.info("Saved %d raw FRED records", len(all_records))
 
-    # Parse into DataFrame
     df = pd.DataFrame(all_records)
-
-    # Truncate date to YYYY-MM
     df["period"] = df["date"].str[:7]
 
-    # Handle FRED's "." missing sentinel
+    # FRED uses "." for missing
     df["value"] = df["value"].replace(".", pd.NA)
     df["coincident_index"] = pd.to_numeric(df["value"], errors="coerce")
 
-    # Select final columns
     df = df[["state", "period", "coincident_index"]].copy()
 
-    # Filter to date range
     df = df[
         (df["period"] >= START_DATE) & (df["period"] <= END_DATE)
     ].copy()

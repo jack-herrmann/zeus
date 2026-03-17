@@ -1,5 +1,3 @@
-"""V8 — Lag analysis (cross-correlogram on detrended data)."""
-
 import logging
 
 import matplotlib.pyplot as plt
@@ -13,7 +11,6 @@ logger = logging.getLogger("zeus.eda.vis_lags")
 
 
 def plot_lag_analysis(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
-    """V8: cross-correlogram of detrended industrial signal vs CI (all states)."""
     lags = range(-48, 49)
     lag_list = list(lags)
 
@@ -60,7 +57,7 @@ def plot_lag_analysis(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
                 ax.plot(lag_list, rs, linewidth=0.8,
                         color="#2F4F6F", alpha=0.15)
 
-        # Overlay key states on top (in pick_key_states order: green, yellow, red)
+        # overlay key states on top
         key_order = [abbr for abbr, _name, _r, _color in pick_key_states(corr_df)]
         for state in key_order:
             if state in key_curves:
@@ -68,7 +65,7 @@ def plot_lag_analysis(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
                 ax.plot(lag_list, key_curves[state], linewidth=2.0,
                         color=color, alpha=0.9, label=name)
 
-        # 95% significance band under the null of no correlation
+        # 95% significance band
         if sample_n:
             sig_bound = 1.96 / np.sqrt(sample_n)
             ax.axhspan(-sig_bound, sig_bound, color="lightgray", alpha=0.3)

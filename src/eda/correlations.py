@@ -1,5 +1,3 @@
-"""Compute level and detrended correlations for every (state, sector) pair."""
-
 import logging
 
 import numpy as np
@@ -12,12 +10,6 @@ logger = logging.getLogger("zeus.eda.correlations")
 
 
 def compute_correlations(df: pd.DataFrame) -> pd.DataFrame:
-    """Return long-format DataFrame with columns: state, sector, r_level, r_detrended.
-
-    For each (state, sector) where the signal is not all-NaN:
-      r_level     = Pearson r between signal_{sector} and coincident_index
-      r_detrended = Pearson r after linearly detrending both series
-    """
     rows = []
     for state in sorted(df["state"].unique()):
         group = df[df["state"] == state].sort_values("period")

@@ -1,5 +1,3 @@
-"""V1 — Three-panel national sector trends with economic event markers."""
-
 import logging
 
 import matplotlib.pyplot as plt
@@ -38,7 +36,6 @@ PANEL_TITLES = {
 
 
 def _add_events(ax, ymin: float, ymax: float) -> None:
-    """Add labeled recession bands and event lines to an axis."""
     for start, end, label in RECESSIONS:
         ts_start = pd.Timestamp(start)
         ts_end = pd.Timestamp(end)
@@ -65,9 +62,8 @@ def _add_events(ax, ymin: float, ymax: float) -> None:
 
 
 def plot_national_trends(df: pd.DataFrame) -> None:
-    """V1: three stacked panels, rolling avg, recession bands, event markers."""
     national = df.groupby("period")[["sales_res", "sales_com", "sales_ind"]].sum()
-    national = national / 1000  # MWh → GWh
+    national = national / 1000  # MWh -> GWh
     national.index = parse_periods(pd.Series(national.index))
     national = national.sort_index()
 

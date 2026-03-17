@@ -1,5 +1,3 @@
-"""Geo helpers and choropleth plot functions (V2, V3, V5)."""
-
 import logging
 from pathlib import Path
 
@@ -26,7 +24,6 @@ FIPS_EXCLUDE = {"02", "15", "60", "66", "69", "72", "78"}
 
 
 def load_states_gdf():
-    """Load continental US states GeoDataFrame (Albers Equal Area)."""
     import geopandas as gpd
 
     if not _SHAPEFILE.exists():
@@ -42,7 +39,6 @@ def load_states_gdf():
 
 
 def _annotate_extremes(ax, gdf, values_col, top_n, bottom_n):
-    """Label the top-N and bottom-N states by abbreviation + value."""
     merged = gdf.dropna(subset=[values_col])
     if merged.empty:
         return
@@ -61,11 +57,7 @@ def _annotate_extremes(ax, gdf, values_col, top_n, bottom_n):
         )
 
 
-# ---------------------------------------------------------------------------
-# V2: Industrial share choropleth
-# ---------------------------------------------------------------------------
 def plot_industrial_share(df: pd.DataFrame) -> None:
-    """V2 — Industrial share of total electricity by state."""
     df = df.copy()
     total = df["sales_res"] + df["sales_com"] + df["sales_ind"]
     df["ind_share"] = df["sales_ind"] / total * 100
@@ -107,11 +99,7 @@ def plot_industrial_share(df: pd.DataFrame) -> None:
         save_figure(fig, "v2_industrial_share")
 
 
-# ---------------------------------------------------------------------------
-# V3: Growth comparison choropleths
-# ---------------------------------------------------------------------------
 def plot_growth_comparison(df: pd.DataFrame) -> None:
-    """V3 — Side-by-side choropleths: industrial electricity growth vs CI growth."""
     import matplotlib.ticker as mticker
 
     early = df[df["period"] < "2003-01"].groupby("state")
@@ -123,13 +111,13 @@ def plot_growth_comparison(df: pd.DataFrame) -> None:
     growth_df = pd.DataFrame({"ind_growth": ind_growth, "ci_growth": ci_growth}).reset_index()
     growth_df = growth_df.rename(columns={"state": "STUSPS"})
 
-    # Save ND's original value before clipping
+    # save ND original before clip
     nd_orig = growth_df.loc[growth_df["STUSPS"] == "ND", "ind_growth"].values[0]
 
     gdf = load_states_gdf()
     gdf = gdf.merge(growth_df, on="STUSPS", how="left")
 
-    # Clip both to [-100, 100] for visualization
+    # clip to [-100, 100]
     gdf["ind_growth_clipped"] = gdf["ind_growth"].clip(-100, 100)
     gdf["ci_growth_clipped"] = gdf["ci_growth"].clip(-100, 100)
 
@@ -154,7 +142,7 @@ def plot_growth_comparison(df: pd.DataFrame) -> None:
         )
         ax1.set_axis_off()
 
-        # Label ND with its original (unclipped) value
+        # label ND with unclipped value
         nd_row = gdf[gdf["STUSPS"] == "ND"].iloc[0]
         c = nd_row.geometry.centroid
         ax1.annotate(
@@ -164,7 +152,7 @@ def plot_growth_comparison(df: pd.DataFrame) -> None:
             bbox=dict(boxstyle="round,pad=0.2", fc="white", alpha=0.85, lw=0),
         )
 
-        # Fix colorbar tick labels: replace 100 with "100+"
+        # "100" -> "100+"
         cb1 = ax1.get_figure().axes[-1]
         cb1.yaxis.set_major_formatter(
             mticker.FuncFormatter(
@@ -200,11 +188,7 @@ def plot_growth_comparison(df: pd.DataFrame) -> None:
         save_figure(fig, "v3_growth_comparison")
 
 
-# ---------------------------------------------------------------------------
-# V5: Deindustrialization map (climax)
-# ---------------------------------------------------------------------------
 def plot_deindustrialization_map(corr_df: pd.DataFrame) -> None:
-    """V5 — Choropleth of detrended industrial correlation."""
     ind_corr = corr_df[corr_df["sector"] == "ind"][["state", "r_detrended"]].copy()
     ind_corr = ind_corr.rename(columns={"state": "STUSPS"})
 

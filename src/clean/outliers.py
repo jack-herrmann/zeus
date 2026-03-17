@@ -1,5 +1,3 @@
-"""Spike detection and interpolation for electricity sales data."""
-
 import logging
 
 import numpy as np
@@ -15,12 +13,6 @@ NEIGHBOR_DEV_THRESHOLD = 0.50
 
 
 def detect_outliers(df: pd.DataFrame) -> pd.DataFrame:
-    """Detect outlier spikes using rolling MAD z-score AND neighbor deviation.
-
-    Both thresholds must be exceeded to flag a value. This avoids false
-    positives from structural breaks (rolling window handles regime shifts)
-    and seasonal peaks (neighbor check handles regular extremes).
-    """
     records = []
 
     for state, group in df.groupby("state"):
@@ -56,7 +48,7 @@ def detect_outliers(df: pd.DataFrame) -> pd.DataFrame:
                 if local_z < LOCAL_Z_THRESHOLD:
                     continue
 
-                # Neighbor deviation check
+                # neighbor deviation check
                 prev_val = values[i - 1] if i > 0 else np.nan
                 next_val = values[i + 1] if i < len(values) - 1 else np.nan
                 neighbors = [x for x in [prev_val, next_val] if not np.isnan(x)]
@@ -87,18 +79,13 @@ def detect_outliers(df: pd.DataFrame) -> pd.DataFrame:
 def interpolate_outliers(
     df: pd.DataFrame, outlier_report: pd.DataFrame
 ) -> pd.DataFrame:
-    """Replace flagged spikes with neighbor averages.
-
-    Uses original (pre-interpolation) values for neighbor lookups.
-    Falls back to rolling median if a neighbor is itself an outlier.
-    """
     if outlier_report.empty:
         logger.info("No outliers to interpolate.")
         return df.copy()
 
     df_clean = df.copy()
 
-    # Set of outlier keys for neighbor-is-outlier fallback
+    # outlier keys for fallback lookup
     outlier_keys = set()
     for _, row in outlier_report.iterrows():
         outlier_keys.add((row["state"], row["period"], row["column"]))
@@ -109,7 +96,7 @@ def interpolate_outliers(
         col = row["column"]
         rolling_med = row["rolling_median"]
 
-        # Get this state's data sorted by period from ORIGINAL df
+        # from original df, not interpolated
         state_mask = df["state"] == state
         state_data = df.loc[state_mask].sort_values("period")
         periods = state_data["period"].values
@@ -120,12 +107,12 @@ def interpolate_outliers(
         i = idx[0]
 
         neighbors = []
-        # Previous month
+        # previous month
         if i > 0:
             prev_period = periods[i - 1]
             if (state, prev_period, col) not in outlier_keys:
                 neighbors.append(state_data.iloc[i - 1][col])
-        # Next month
+        # next month
         if i < len(periods) - 1:
             next_period = periods[i + 1]
             if (state, next_period, col) not in outlier_keys:
@@ -149,7 +136,6 @@ def interpolate_outliers(
 
 
 def log_outlier_report(outlier_report: pd.DataFrame) -> None:
-    """Pretty-print the outlier detection results."""
     if outlier_report.empty:
         logger.info("No outliers detected.")
         return

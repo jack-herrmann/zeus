@@ -1,5 +1,3 @@
-"""V7 — Scatter plots: detrended industrial signal vs detrended CI."""
-
 import logging
 
 import matplotlib.pyplot as plt
@@ -18,7 +16,6 @@ logger = logging.getLogger("zeus.eda.vis_scatter")
 
 
 def plot_scatter(df: pd.DataFrame, corr_df: pd.DataFrame) -> None:
-    """V7: 1×3 scatter, z-scored detrended signal_ind vs z-scored detrended CI."""
     key_states = pick_key_states(corr_df)
 
     with zeus_style():

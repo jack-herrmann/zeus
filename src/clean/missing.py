@@ -1,5 +1,3 @@
-"""Missingness audit and heatmap visualization."""
-
 import logging
 
 import matplotlib
@@ -23,11 +21,6 @@ DATA_COLS = [
 
 
 def audit_missing(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute % missing for each (state, column) pair.
-
-    Returns a DataFrame with states as rows and data columns as columns,
-    values are % of months that are NaN.
-    """
     states = sorted(df["state"].unique())
     result = {}
 
@@ -54,12 +47,11 @@ def audit_missing(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def plot_missingness_heatmap(missing_pct: pd.DataFrame) -> None:
-    """Save a missingness heatmap to figures/missingness_heatmap.png."""
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
     fig, ax = plt.subplots(figsize=(12, 8))
 
-    # Annotation: show percentage only for non-zero cells
+    # only annotate non-zero cells
     annot = missing_pct.map(lambda v: f"{v:.0f}%" if v > 0 else "")
 
     sns.heatmap(

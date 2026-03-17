@@ -1,5 +1,3 @@
-"""EIA electricity retail sales and prices collector."""
-
 import json
 import logging
 import time
@@ -35,7 +33,6 @@ def _make_session() -> requests.Session:
 
 
 def fetch_state(state: str, session: requests.Session) -> list[dict]:
-    """Fetch monthly sales and price data for one state, all 3 sectors."""
     params = {
         "api_key": EIA_API_KEY,
         "frequency": "monthly",
@@ -60,7 +57,6 @@ def fetch_state(state: str, session: requests.Session) -> list[dict]:
 
 
 def fetch_all(use_cache: bool = True) -> pd.DataFrame:
-    """Fetch EIA electricity sales + prices for all 50 states."""
     if use_cache and EIA_RAW_FILE.exists():
         logger.info("Loading cached EIA data from %s", EIA_RAW_FILE)
         with open(EIA_RAW_FILE) as f:
@@ -78,19 +74,16 @@ def fetch_all(use_cache: bool = True) -> pd.DataFrame:
             json.dump(all_records, f)
         logger.info("Saved %d raw EIA records", len(all_records))
 
-    # Parse into DataFrame
     df = pd.DataFrame(all_records)
 
-    # Rename and select columns
     df = df.rename(columns={
         "stateid": "state",
         "sectorid": "sector",
     })
 
-    # Keep only needed columns
     df = df[["state", "period", "sector", "sales", "price"]].copy()
 
-    # Cast numeric columns (EIA returns strings)
+    # EIA returns strings
     for col in ["sales", "price"]:
         before = df[col].notna().sum()
         df[col] = pd.to_numeric(df[col], errors="coerce")
@@ -99,13 +92,11 @@ def fetch_all(use_cache: bool = True) -> pd.DataFrame:
         if coerced > 0:
             logger.warning("EIA: %d values coerced to NaN in '%s'", coerced, col)
 
-    # Filter to known states
     dropped = df[~df["state"].isin(STATES_50)]
     if len(dropped) > 0:
         logger.info("EIA: dropped %d rows with state not in STATES_50", len(dropped))
     df = df[df["state"].isin(STATES_50)].copy()
 
-    # Rename to final column names
     df = df.rename(columns={"sales": "sales_mwh", "price": "price_cents_kwh"})
 
     df.sort_values(["state", "period", "sector"], inplace=True)
